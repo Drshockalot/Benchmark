@@ -276,52 +276,18 @@ void BilinearFilter(CImage* src, CImage* dest)
 			int x_index = (resize_ratio_x * x);
 			int y_index = (resize_ratio_y * y);
 
-			// Calculate the correct weight that should be used from the pixels
-			// this iteration based on the resize ratio and current progress through
-			// the original image
-			
-
-
-			// Being since this is the bilinear filtering algorithm, four pixels will be used
-			// to weight a single pixel of the new image.
-			// These pixels use the current index of the original image as a base,
-			// and gets the other three pixels in a 2x2 grid compared to it
-			// i.e. the pixel next to it, below it, and to the bottom right corner
+			// Get the extrapolated pixel from the original image
 			COLORREF p1(quickly_src.GetPixel(x_index, y_index));
-			/*COLORREF p2(quickly_src.GetPixel(x_index + 1, y_index));
-			COLORREF p3(quickly_src.GetPixel(x_index, y_index + 1));
-			COLORREF p4(quickly_src.GetPixel(x_index + 1, y_index + 1));*/
 
-			// Using the values calculated above, the weights for each pixel used can be calculated
-			// and then combined in a single R, G, and B value
-
-			// Combine red
-			BYTE r(((p1 >> 16) & 0xff));
-
-			// Combine blue
-			BYTE b((p1 & 0xff));
-
-			// Combine green
-			BYTE g(((p1 >> 8) & 0xff));
+			BYTE r((p1 >> 16) & 0xff);
+			BYTE b(p1 & 0xff);
+			BYTE g((p1 >> 8) & 0xff);
 		
-			// Update the pixel at the new image with the appropriately weighted pixel
+			// Update the pixel at the new image with the correct pixel from the original image
 			quickly_dest.SetPixel(x, y, RGB(r, b, g));
 		}
 	}
 }
-
-//void ProcessImage(TCHAR* srcFile, TCHAR* destFile)
-//{
-//	CImage img;
-//	img.Load(srcFile);
-//	CImage *resizedImage = Resize(&img);
-//	BilinearFilter(&img, resizedImage);
-//	Brighten(resizedImage);
-//	Greyscale(resizedImage);
-//	Rotate(resizedImage);
-//	resizedImage->Save(destFile);
-//	delete resizedImage;
-//}
 
 void ProcessImage(CImage *img, TCHAR* destFile)
 {
@@ -372,10 +338,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 		//--------------------------------------------------------------------------------------
 		// Process the images...   // Put your code here...
-
-		/////////////////////////
-		//		SEQUENTIAL     //
-		/////////////////////////
 
 		// List of pre-processed source files
 		TCHAR* src_names[12] { L"IMG_1.JPG", 
@@ -435,45 +397,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		{
 			threads[i].join();
 		}
-
-		/////////////////////////
-		/////////////////////////
-		/////////////////////////
-
-
-		/////////////////////////
-		//	   ALL AT ONCE	   //
-		/////////////////////////
-
-		//std::thread f1(f, (TCHAR*)L"IMG_1.JPG", (TCHAR*)L"IMG_1.PNG");
-		//std::thread f2(f, (TCHAR*)L"IMG_2.JPG", (TCHAR*)L"IMG_2.PNG");
-		//std::thread f3(f, (TCHAR*)L"IMG_3.JPG", (TCHAR*)L"IMG_3.PNG");
-		//std::thread f4(f, (TCHAR*)L"IMG_4.JPG", (TCHAR*)L"IMG_4.PNG");
-		//std::thread f5(f, (TCHAR*)L"IMG_5.JPG", (TCHAR*)L"IMG_5.PNG");
-		//std::thread f6(f, (TCHAR*)L"IMG_6.JPG", (TCHAR*)L"IMG_6.PNG");
-		//std::thread f7(f, (TCHAR*)L"IMG_7.JPG", (TCHAR*)L"IMG_7.PNG");
-		//std::thread f8(f, (TCHAR*)L"IMG_8.JPG", (TCHAR*)L"IMG_8.PNG");
-		//std::thread f9(f, (TCHAR*)L"IMG_9.JPG", (TCHAR*)L"IMG_9.PNG");
-		//std::thread f10(f, (TCHAR*)L"IMG_10.JPG", (TCHAR*)L"IMG_10.PNG");
-		//std::thread f11(f, (TCHAR*)L"IMG_11.JPG", (TCHAR*)L"IMG_11.PNG");
-		//std::thread f12(f, (TCHAR*)L"IMG_12.JPG", (TCHAR*)L"IMG_12.PNG");
-
-		//f1.join();
-		//f2.join();
-		//f3.join();
-		//f4.join();
-		//f5.join();
-		//f6.join();
-		//f7.join();
-		//f8.join();
-		//f9.join();
-		//f10.join();
-		//f11.join();
-		//f12.join();
-
-		/////////////////////////
-		/////////////////////////
-		/////////////////////////
 
 		//-------------------------------------------------------------------------------------------------------
 
