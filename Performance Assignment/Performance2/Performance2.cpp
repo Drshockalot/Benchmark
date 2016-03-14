@@ -253,7 +253,7 @@ void BilinearFilter(CImage* src, CImage* dest)
 	// as the loop counters
 	int new_width(dest->GetWidth());
 	int new_height(dest->GetHeight());
-
+	
 	// Ascertain the resize ratios for the new image
 	// For the purposes of the given images, being since the the new images are 50% smaller
 	// than the originals, this calculation is almost certain to end in "2" for each calculation,
@@ -265,7 +265,7 @@ void BilinearFilter(CImage* src, CImage* dest)
 	// as both the src and dest images will be used during the algorithm
 	CImagePixelAccessOptimizer quickly_dest(dest);
 	CImagePixelAccessOptimizer quickly_src(src);
-
+	
 	// Ensure that it is the resized dimentions that are being looped over
 	for (int y(0); y < new_height; ++y)
 	{
@@ -275,15 +275,40 @@ void BilinearFilter(CImage* src, CImage* dest)
 			// from the resize ratio and current loop counter
 			int x_index = (resize_ratio_x * x);
 			int y_index = (resize_ratio_y * y);
-
-			// Get the extrapolated pixel from the original image
+			
+			// Calculate the correct weight that should be used from the pixels
+			// this iteration based on the resize ratio and current progress through
+			// the original image
+			int x_diff = (resize_ratio_x * x) - x_index;
+			int y_diff = (resize_ratio_y * y) - y_index;
+			
+				
+			// Being since this is the bilinear filtering algorithm, four pixels will be used
+			// to weight a single pixel of the new image.
+			// These pixels use the current index of the original image as a base,
+			// and gets the other three pixels in a 2x2 grid compared to it
+			// i.e. the pixel next to it, below it, and to the bottom right corner
 			COLORREF p1(quickly_src.GetPixel(x_index, y_index));
-
-			BYTE r((p1 >> 16) & 0xff);
-			BYTE b(p1 & 0xff);
-			BYTE g((p1 >> 8) & 0xff);
-		
-			// Update the pixel at the new image with the correct pixel from the original image
+			COLORREF p2(quickly_src.GetPixel(x_index + 1, y_index));
+			COLORREF p3(quickly_src.GetPixel(x_index, y_index + 1));
+			COLORREF p4(quickly_src.GetPixel(x_index + 1, y_index + 1));
+			
+			// Using the values calculated above, the weights for each pixel used can be calculated
+			// and then combined in a single R, G, and B value
+				
+			// Combine red
+			BYTE r(((p1 >> 16) & 0xff)*(1 - x_diff)*(1 - y_diff) + ((p2 >> 16) & 0xff)*(x_diff)*(1 - y_diff) +
+				((p3 >> 16) & 0xff)*(y_diff)*(1 - x_diff) + ((p4 >> 16) & 0xff)*(x_diff*y_diff));
+			
+			// Combine blue
+			BYTE b((p1 & 0xff)*(1 - x_diff)*(1 - y_diff) + (p2 & 0xff)*(x_diff)*(1 - y_diff) +
+				(p3 & 0xff)*(y_diff)*(1 - x_diff) + (p4 & 0xff)*(x_diff*y_diff));
+			
+			// Combine green
+			BYTE g(((p1 >> 8) & 0xff)*(1 - x_diff)*(1 - y_diff) + ((p2 >> 8) & 0xff)*(x_diff)*(1 - y_diff) +
+				((p3 >> 8) & 0xff)*(y_diff)*(1 - x_diff) + ((p4 >> 8) & 0xff)*(x_diff*y_diff));
+			
+			// Update the pixel at the new image with the appropriately weighted pixel
 			quickly_dest.SetPixel(x, y, RGB(r, b, g));
 		}
 	}
